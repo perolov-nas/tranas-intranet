@@ -160,6 +160,11 @@ class Tranas_User_Profile_Shortcode {
      * @return string HTML-output
      */
     public function render_shortcode( $atts ) {
+        // Hoppa över rendering i admin/REST-kontext (t.ex. Gutenberg-editorn)
+        if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+            return '<div class="tranas-profile-form-wrapper"><p>' . esc_html__( '[Användarprofilformulär visas här på frontend]', 'tranas-intranet' ) . '</p></div>';
+        }
+
         // Kolla om användaren är inloggad
         if ( ! is_user_logged_in() ) {
             return sprintf(
@@ -208,7 +213,7 @@ class Tranas_User_Profile_Shortcode {
         ob_start();
         ?>
         <div class="tranas-profile-form-wrapper">
-            <form id="tranas-user-profile-form" class="tranas-form tranas-profile-form" method="post">
+            <form id="tranas-user-profile-form" class="tranas-profile-form" method="post">
                 <?php wp_nonce_field( 'tranas_user_profile_nonce', 'tranas_profile_nonce' ); ?>
                 
                 <!-- Meddelande-container för AJAX-svar -->
@@ -217,7 +222,7 @@ class Tranas_User_Profile_Shortcode {
                 <?php foreach ( $grouped_fields as $section_key => $section_fields ) : ?>
                     <?php if ( isset( $sections[ $section_key ] ) ) : ?>
                         <fieldset class="tf-fieldset tranas-profile-section tranas-profile-section--<?php echo esc_attr( $section_key ); ?>">
-                            <legend class="tf-label tranas-profile-section__title"><?php echo esc_html( $sections[ $section_key ] ); ?></legend>
+                            <h3 class="tf-label tranas-profile-section__title"><?php echo esc_html( $sections[ $section_key ] ); ?></h3>
                             
                             <div class="tranas-profile-fields">
                                 <?php foreach ( $section_fields as $field_key => $field_data ) : ?>

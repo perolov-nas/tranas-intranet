@@ -3,7 +3,7 @@
  * Plugin Name: Tranås Intranät
  * Plugin URI: https://tranas.se
  * Description: Intranätsanpassningar för Tranås kommun. Lägger till shortcodes och funktionalitet för användarhantering.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Tranås kommun
  * Author URI: https://tranas.se
  * Text Domain: tranas-intranet
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin-konstanter
-define( 'TRANAS_INTRANET_VERSION', '1.0.0' );
+define( 'TRANAS_INTRANET_VERSION', '1.1.0' );
 define( 'TRANAS_INTRANET_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TRANAS_INTRANET_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -58,12 +58,21 @@ class Tranas_Intranet {
     public $user_meta_fields = null;
 
     /**
+     * Instans av News Feed Preferences
+     *
+     * @var Tranas_News_Feed_Preferences
+     */
+    public $news_feed_preferences = null;
+
+    /**
      * Ladda in beroenden
      */
     private function load_dependencies() {
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-user-meta-fields.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-user-profile-shortcode.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-login-required.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-news-feed-preferences.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-news-feed-shortcode.php';
     }
 
     /**
@@ -81,6 +90,10 @@ class Tranas_Intranet {
         
         // Initiera shortcodes
         new Tranas_User_Profile_Shortcode( $this->user_meta_fields );
+        
+        // Initiera nyhetsflödes-funktionalitet
+        $this->news_feed_preferences = new Tranas_News_Feed_Preferences();
+        new Tranas_News_Feed_Shortcode( $this->news_feed_preferences );
     }
 
     /**
@@ -95,19 +108,27 @@ class Tranas_Intranet {
             true
         );
 
-        wp_localize_script(
-            'tranas-intranet-user-profile',
-            'tranasIntranet',
-            array(
-                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-                'nonce'   => wp_create_nonce( 'tranas_user_profile_nonce' ),
-                'strings' => array(
-                    'saving'  => __( 'Sparar...', 'tranas-intranet' ),
-                    'saved'   => __( 'Uppgifterna har sparats!', 'tranas-intranet' ),
-                    'error'   => __( 'Ett fel uppstod. Försök igen.', 'tranas-intranet' ),
-                ),
-            )
+        wp_enqueue_script(
+            'tranas-intranet-news-feed',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/js/news-feed.js',
+            array(),
+            TRANAS_INTRANET_VERSION,
+            true
         );
+
+        // Lokalisera scripten med gemensam data
+        $localize_data = array(
+            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+            'nonce'   => wp_create_nonce( 'tranas_user_profile_nonce' ),
+            'strings' => array(
+                'saving'  => __( 'Sparar...', 'tranas-intranet' ),
+                'saved'   => __( 'Uppgifterna har sparats!', 'tranas-intranet' ),
+                'error'   => __( 'Ett fel uppstod. Försök igen.', 'tranas-intranet' ),
+            ),
+        );
+
+        wp_localize_script( 'tranas-intranet-user-profile', 'tranasIntranet', $localize_data );
+        wp_localize_script( 'tranas-intranet-news-feed', 'tranasIntranet', $localize_data );
     }
 
     /**
