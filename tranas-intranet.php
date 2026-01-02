@@ -72,6 +72,13 @@ class Tranas_Intranet {
     public $system_post_type = null;
 
     /**
+     * Instans av System Preferences
+     *
+     * @var Tranas_System_Preferences
+     */
+    public $system_preferences = null;
+
+    /**
      * Ladda in beroenden
      */
     private function load_dependencies() {
@@ -81,6 +88,7 @@ class Tranas_Intranet {
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-news-feed-preferences.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-news-feed-shortcode.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-post-type.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-preferences.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-shortcode.php';
     }
 
@@ -111,8 +119,11 @@ class Tranas_Intranet {
         // Initiera System-posttypen
         $this->system_post_type = new Tranas_System_Post_Type();
 
+        // Initiera System-preferenser
+        $this->system_preferences = new Tranas_System_Preferences();
+
         // Initiera System-shortcode
-        new Tranas_System_Shortcode();
+        new Tranas_System_Shortcode( $this->system_preferences );
     }
 
     /**
@@ -135,6 +146,14 @@ class Tranas_Intranet {
             true
         );
 
+        wp_enqueue_script(
+            'tranas-intranet-system-preferences',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/js/system-preferences.js',
+            array(),
+            TRANAS_INTRANET_VERSION,
+            true
+        );
+
         // Lokalisera scripten med gemensam data
         $localize_data = array(
             'ajaxUrl' => admin_url( 'admin-ajax.php' ),
@@ -148,6 +167,7 @@ class Tranas_Intranet {
 
         wp_localize_script( 'tranas-intranet-user-profile', 'tranasIntranet', $localize_data );
         wp_localize_script( 'tranas-intranet-news-feed', 'tranasIntranet', $localize_data );
+        wp_localize_script( 'tranas-intranet-system-preferences', 'tranasIntranet', $localize_data );
     }
 
     /**
@@ -228,8 +248,62 @@ function tranas_intranet_activate() {
     $system_post_type = new Tranas_System_Post_Type();
     $system_post_type->register_post_type();
     flush_rewrite_rules();
+
+    // Importera standardsystem om det inte redan gjorts
+    tranas_intranet_import_default_systems();
 }
 register_activation_hook( __FILE__, 'tranas_intranet_activate' );
+
+/**
+ * Importera standardsystem från SYSTEMS.md
+ */
+function tranas_intranet_import_default_systems() {
+    // Kolla om importen redan har körts
+    if ( get_option( 'tranas_systems_imported' ) ) {
+        return;
+    }
+
+    $systems_file = TRANAS_INTRANET_PLUGIN_DIR . 'SYSTEMS.md';
+
+    if ( ! file_exists( $systems_file ) ) {
+        return;
+    }
+
+    $content = file_get_contents( $systems_file );
+    $lines   = explode( "\n", $content );
+
+    foreach ( $lines as $line ) {
+        // Ta bort "- " från början och trimma
+        $system_name = trim( ltrim( $line, '-' ) );
+
+        // Hoppa över tomma rader
+        if ( empty( $system_name ) ) {
+            continue;
+        }
+
+        // Kolla om systemet redan finns
+        $existing = get_posts( array(
+            'post_type'   => 'tranas_system',
+            'title'       => $system_name,
+            'post_status' => 'any',
+            'numberposts' => 1,
+        ) );
+
+        if ( ! empty( $existing ) ) {
+            continue;
+        }
+
+        // Skapa systemposten
+        wp_insert_post( array(
+            'post_type'   => 'tranas_system',
+            'post_title'  => $system_name,
+            'post_status' => 'publish',
+        ) );
+    }
+
+    // Markera att importen är klar
+    update_option( 'tranas_systems_imported', true );
+}
 
 /**
  * Städa upp vid avaktivering
@@ -237,6 +311,9 @@ register_activation_hook( __FILE__, 'tranas_intranet_activate' );
 function tranas_intranet_deactivate() {
     // Flusha permalänkar för att ta bort custom post type regler
     flush_rewrite_rules();
+
+    // Ta bort import-flaggan så systemen kan importeras igen vid nästa aktivering
+    delete_option( 'tranas_systems_imported' );
 }
 register_deactivation_hook( __FILE__, 'tranas_intranet_deactivate' );
 

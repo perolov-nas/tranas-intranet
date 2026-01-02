@@ -140,9 +140,29 @@ System-posttypen (`tranas_system`) har:
 
 Posttypen använder klassisk editor (inte Gutenberg) för enkel hantering.
 
+#### Inställnings-shortcode
+
+Visar ett formulär där användaren kan välja vilka system som ska visas på startsidan:
+
+```
+[tranas_system_preferences]
+```
+
+**Attribut:**
+
+| Attribut | Beskrivning | Standard |
+|----------|-------------|----------|
+| `title` | Rubrik ovanför formuläret | `Välj dina system` |
+| `description` | Beskrivning under rubriken | `Markera de system du använder...` |
+
+**Exempel:**
+```
+[tranas_system_preferences title="Mina systemgenvägar" description="Välj vilka system du vill ha på din startsida"]
+```
+
 #### System-shortcode
 
-Visar en lista med alla system som klickbara kort:
+Visar en lista med användarens valda system som klickbara kort:
 
 ```
 [tranas_system]
@@ -163,6 +183,8 @@ Visar en lista med alla system som klickbara kort:
 | `show_title` | Visa rubriken | `true` |
 | `edit_url` | URL till sida för att redigera system | tom |
 | `edit_text` | Text på redigera-knappen | `Redigera mina system` |
+| `user_selection` | Filtrera på användarens val | `true` |
+| `fallback` | Vad som visas om inga system valda: `all`, `none` | `none` |
 
 **Exempel:**
 ```
@@ -271,7 +293,7 @@ Formulären använder följande CSS-klasser (kompatibla med Tranås Forms-temat)
 | `.tranas-news-preferences-wrapper` | Wrapper för formuläret |
 | `.tranas-news-preferences__categories` | Container för kategori-checkboxar |
 | `.tranas-news-preferences__category` | Enskild kategori |
-| `.tranas-news-preferences__checkbox` | Checkbox-element |
+| `.tranas-news-preferences__checkbox` | Input-element (stylas som knapp via CSS) |
 | `.tranas-news-preferences__select-all` | Markera alla-knappen |
 | `.tranas-news-preferences__deselect-all` | Avmarkera alla-knappen |
 
@@ -306,10 +328,21 @@ Formulären använder följande CSS-klasser (kompatibla med Tranås Forms-temat)
 | `.tranas-system__item` | Enskilt systemkort (länk) |
 | `.tranas-system__card` | Kortets innehåll |
 | `.tranas-system__thumbnail` | Miniatyrbild-container |
-| `.tranas-system__placeholder-icon` | Placeholder om ingen bild finns |
+| `.tranas-system__fallback-icon` | Fallback-ikon om ingen utvald bild finns |
 | `.tranas-system__content` | Textinnehåll |
 | `.tranas-system__title` | Systemets titel |
-| `.tranas-system__external-indicator` | Ikon för extern länk |
+
+### Systeminställningar
+
+Systeminställningar använder samma CSS-klasser som nyhetsflödes-inställningarna (`tranas-news-preferences__*`) för konsekvent styling. Se sektionen "Nyhetsflödes-inställningar" ovan för CSS-klasser.
+
+Wrapper-klassen är dock unik:
+
+| Klass | Beskrivning |
+|-------|-------------|
+| `.tranas-system-preferences-wrapper` | Wrapper för formuläret |
+| `.tranas-system-preferences__title` | Rubrik |
+| `.tranas-system-preferences__description` | Beskrivningstext |
 
 ## JavaScript
 
@@ -323,6 +356,10 @@ Pluginet laddar följande JavaScript-filer:
 **`assets/js/news-feed.js`**
 - AJAX-sparning av nyhetsflödes-inställningar
 - Markera/avmarkera alla kategorier
+
+**`assets/js/system-preferences.js`**
+- AJAX-sparning av systeminställningar
+- Markera/avmarkera alla system
 
 **JavaScript-objekt:**
 ```javascript
@@ -347,8 +384,11 @@ Vid aktivering migreras automatiskt gammal data:
 ### 1.2.0
 - Nytt: Custom post type "System" för externa systemlänkar
 - Ny shortcode: `[tranas_system]` för att visa systemlista
+- Ny shortcode: `[tranas_system_preferences]` för att välja system
 - ACF-fältgrupp för extern URL på System-posttypen
 - Klassisk editor för System (ingen Gutenberg)
+- Användarval av system med personaliserad visning
+- Automatisk import av standardsystem från SYSTEMS.md
 
 ### 1.1.0
 - Nytt: Personligt nyhetsflöde

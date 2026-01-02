@@ -1,0 +1,38 @@
+- Secid portal mappningar
+- Sefos for web
+- Sefos for web - video "Användargränssnitt"
+- Sefos for web - video "Skicka meddelanden"
+- Sefos for web - video "Säkra möten"
+- Adato Rehabdokumentation
+- DF- Registrera avvikelse
+- DF- Respons
+- DISA-utbildning
+- Ekonomi
+- Flextidsregistrering (endast Citrix)
+- Fronter
+- Geosecma Portal (endast Citrix)
+- Heromaweb (endast Citrix)
+- HR-Manager
+- Inköpsavtal
+- Inköpssystem & fakturahantering
+- IST administration
+- IT-servicedesk felanmälan
+- JPInfonet
+- Kemikaliesystem
+- Ledningssystem CANEA
+- Mail
+- Mateo
+- Mateo
+- Mediaportalen
+- Novi Medarbetaranteckningar
+- Opus Systematiskt arbetsmiljöarbete
+- Personalarkiv - Endast lönesupport
+- Place2Place
+- Pulsen Combine PROD Myndighet
+- Pulsen Combine PROD Utförare
+- Stella Skador och tillbud - chef
+- Stella Skador och tillbud - medarbetare
+- Stella Skador och tillbud – för medarbetare utan sso-login
+- Telefon
+- Tranås hemsida
+- W3D3

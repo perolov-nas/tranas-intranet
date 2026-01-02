@@ -16,9 +16,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Tranas_System_Shortcode {
 
     /**
-     * Konstruktor
+     * Instans av System Preferences
+     *
+     * @var Tranas_System_Preferences
      */
-    public function __construct() {
+    private $preferences;
+
+    /**
+     * Konstruktor
+     *
+     * @param Tranas_System_Preferences $preferences Instans av preferenser-klassen.
+     */
+    public function __construct( $preferences ) {
+        $this->preferences = $preferences;
         add_shortcode( 'tranas_system', array( $this, 'render_shortcode' ) );
     }
 
@@ -43,25 +53,45 @@ class Tranas_System_Shortcode {
 
         $atts = shortcode_atts(
             array(
-                'posts_per_page' => -1,
-                'orderby'        => 'title',
-                'order'          => 'ASC',
-                'layout'         => 'grid', // 'grid', 'list'
-                'columns'        => 3,
-                'show_thumbnail' => 'true',
-                'link_target'    => '_blank', // '_blank', '_self'
-                'title'          => __( 'Mina system', 'tranas-intranet' ),
-                'show_title'     => 'true',
-                'edit_url'       => '',
-                'edit_text'      => __( 'Redigera mina system', 'tranas-intranet' ),
+                'posts_per_page'  => -1,
+                'orderby'         => 'title',
+                'order'           => 'ASC',
+                'layout'          => 'grid', // 'grid', 'list'
+                'columns'         => 3,
+                'show_thumbnail'  => 'true',
+                'link_target'     => '_blank', // '_blank', '_self'
+                'title'           => __( 'Mina system', 'tranas-intranet' ),
+                'show_title'      => 'true',
+                'edit_url'        => '',
+                'edit_text'       => __( 'Redigera mina system', 'tranas-intranet' ),
+                'user_selection'  => 'true', // Filtrera på användarens val
+                'fallback'        => 'none', // 'all', 'none' - vad som visas om inga system valda
             ),
             $atts,
             'tranas_system'
         );
 
         // Konvertera string-booleans
-        $show_thumbnail = filter_var( $atts['show_thumbnail'], FILTER_VALIDATE_BOOLEAN );
-        $show_title     = filter_var( $atts['show_title'], FILTER_VALIDATE_BOOLEAN );
+        $show_thumbnail  = filter_var( $atts['show_thumbnail'], FILTER_VALIDATE_BOOLEAN );
+        $show_title      = filter_var( $atts['show_title'], FILTER_VALIDATE_BOOLEAN );
+        $user_selection  = filter_var( $atts['user_selection'], FILTER_VALIDATE_BOOLEAN );
+
+        // Hämta användarens valda system
+        $user_systems    = array();
+        $is_personalized = false;
+
+        if ( $user_selection && is_user_logged_in() ) {
+            $user_systems    = $this->preferences->get_user_systems();
+            $is_personalized = ! empty( $user_systems );
+        }
+
+        // Om user_selection är aktiverat och användaren inte har valt några system
+        if ( $user_selection && ! $is_personalized ) {
+            if ( 'none' === $atts['fallback'] ) {
+                return $this->render_no_selection_message( $atts );
+            }
+            // fallback 'all' - visa alla system
+        }
 
         // Bygg query-argument
         $query_args = array(
@@ -71,6 +101,11 @@ class Tranas_System_Shortcode {
             'orderby'        => $atts['orderby'],
             'order'          => $atts['order'],
         );
+
+        // Filtrera på användarens val om det finns
+        if ( $user_selection && $is_personalized ) {
+            $query_args['post__in'] = $user_systems;
+        }
 
         /**
          * Filter för att anpassa query-argumenten
@@ -145,20 +180,15 @@ class Tranas_System_Shortcode {
                         <?php if ( has_post_thumbnail() ) : ?>
                             <?php the_post_thumbnail( 'medium', array( 'alt' => get_the_title() ) ); ?>
                         <?php else : ?>
-                            <div class="tranas-system__placeholder-icon">
-                                <span class="dashicons dashicons-external"></span>
-                            </div>
+                            <img src="<?php echo esc_url( TRANAS_INTRANET_PLUGIN_URL . 'assets/img/system.svg' ); ?>" 
+                                 alt="<?php echo esc_attr( get_the_title() ); ?>" 
+                                 class="tranas-system__fallback-icon">
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
 
                 <div class="tranas-system__content">
-                    <h3 class="tranas-system__title"><?php the_title(); ?></h3>
-                    <?php if ( '_blank' === $link_target ) : ?>
-                        <span class="tranas-system__external-indicator" aria-hidden="true">
-                            <span class="dashicons dashicons-external"></span>
-                        </span>
-                    <?php endif; ?>
+                    <h5 class="tranas-system__title"><?php the_title(); ?></h5>
                 </div>
             </article>
         </a>
@@ -176,6 +206,40 @@ class Tranas_System_Shortcode {
         <div class="tranas-system tranas-system--empty">
             <div class="tf-message tf-message--info">
                 <p><?php esc_html_e( 'Inga system har lagts till ännu.', 'tranas-intranet' ); ?></p>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Rendera meddelande när användaren inte valt några system
+     *
+     * @param array $atts Shortcode-attribut.
+     * @return string HTML-output.
+     */
+    private function render_no_selection_message( $atts ) {
+        ob_start();
+        ?>
+        <div class="tranas-system tranas-system--no-selection">
+            <div class="tf-message tf-message--info">
+                <?php if ( is_user_logged_in() ) : ?>
+                    <p><?php esc_html_e( 'Du har inte valt några system ännu.', 'tranas-intranet' ); ?></p>
+                    <?php if ( ! empty( $atts['edit_url'] ) ) : ?>
+                        <p>
+                            <a href="<?php echo esc_url( $atts['edit_url'] ); ?>" class="tf-button">
+                                <?php esc_html_e( 'Välj dina system', 'tranas-intranet' ); ?>
+                            </a>
+                        </p>
+                    <?php endif; ?>
+                <?php else : ?>
+                    <p>
+                        <?php esc_html_e( 'Logga in för att se dina system.', 'tranas-intranet' ); ?>
+                        <a href="<?php echo esc_url( wp_login_url( get_permalink() ) ); ?>">
+                            <?php esc_html_e( 'Logga in här', 'tranas-intranet' ); ?>
+                        </a>
+                    </p>
+                <?php endif; ?>
             </div>
         </div>
         <?php
