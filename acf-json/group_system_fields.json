@@ -1,0 +1,42 @@
+{
+    "key": "group_system_fields",
+    "title": "Systemfält",
+    "fields": [
+        {
+            "key": "field_system_external_url",
+            "label": "Extern länk",
+            "name": "external_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "Ange URL till det externa systemet.",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": "https://exempel.se/system"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "tranas_system"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Fält för System-posttypen",
+    "show_in_rest": 1
+}
+

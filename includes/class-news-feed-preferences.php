@@ -240,7 +240,7 @@ class Tranas_News_Feed_Preferences {
                                     </span>
                                     <?php if ( $category->count > 0 ) : ?>
                                         <span class="tranas-news-preferences__category-count">
-                                            (<?php echo esc_html( $category->count ); ?>)
+                                            <?php echo esc_html( $category->count ); ?>
                                         </span>
                                     <?php endif; ?>
                                 </label>

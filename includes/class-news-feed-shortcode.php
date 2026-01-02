@@ -53,14 +53,6 @@ class Tranas_News_Feed_Shortcode {
                 '</p></div>';
         }
 
-        // Debug - visa endast på frontend för admin
-        if ( current_user_can( 'manage_options' ) && isset( $_GET['debug_feed'] ) ) {
-            echo '<div style="background:#ffe0e0;padding:10px;margin:10px 0;border:2px solid red;">';
-            echo '<strong>DEBUG:</strong> Shortcode körs!<br>';
-            echo 'Raw $atts: <pre>' . print_r( $atts, true ) . '</pre>';
-            echo '</div>';
-        }
-
         // Säkerställ att $atts är en array
         if ( ! is_array( $atts ) ) {
             $atts = array();
@@ -156,18 +148,18 @@ class Tranas_News_Feed_Shortcode {
             
             <?php if ( $is_personalized && $show_settings_link ) : ?>
                 <div class="tranas-news-feed__header">
-                    <span class="tranas-news-feed__personalized-badge">
+                    <h2 class="tranas-news-feed__personalized-badge">
                         <?php esc_html_e( 'Ditt personliga flöde', 'tranas-intranet' ); ?>
-                    </span>
+                    </h2>
                     <?php if ( ! empty( $atts['settings_url'] ) ) : ?>
                         <a href="<?php echo esc_url( $atts['settings_url'] ); ?>" class="tranas-news-feed__settings-link">
-                            <?php esc_html_e( 'Ändra inställningar', 'tranas-intranet' ); ?>
+                            <?php esc_html_e( 'Redigera ditt nyhetsflöde', 'tranas-intranet' ); ?>
                         </a>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
 
-            <div class="tranas-news-feed__posts">
+            <div class="tranas-news-feed__posts posts-list">
                 <?php while ( $query->have_posts() ) : $query->the_post(); ?>
                     <?php
                     $this->render_post_item(
@@ -188,6 +180,7 @@ class Tranas_News_Feed_Shortcode {
 
     /**
      * Rendera ett enskilt inlägg i flödet
+     * HTML-struktur matchad med temats ACF-block för nyheter
      *
      * @param array $atts           Shortcode-attribut
      * @param bool  $show_excerpt   Visa utdrag
@@ -197,69 +190,43 @@ class Tranas_News_Feed_Shortcode {
      */
     private function render_post_item( $atts, $show_excerpt, $show_date, $show_category, $show_thumbnail ) {
         $post_id     = get_the_ID();
-        $date_format = ! empty( $atts['date_format'] ) ? $atts['date_format'] : get_option( 'date_format' );
-        $categories  = get_the_terms( $post_id, $atts['taxonomy'] );
+        $date_format = ! empty( $atts['date_format'] ) ? $atts['date_format'] : 'j F Y';
+        $fallback_image = get_template_directory_uri() . '/src/images/fallback-img.svg';
         ?>
-        <article class="tranas-news-feed__item" id="news-item-<?php echo esc_attr( $post_id ); ?>">
-            <?php if ( $show_thumbnail && has_post_thumbnail() ) : ?>
-                <div class="tranas-news-feed__thumbnail">
-                    <a href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1">
-                        <?php the_post_thumbnail( 'medium', array( 'class' => 'tranas-news-feed__image' ) ); ?>
-                    </a>
-                </div>
-            <?php endif; ?>
-
-            <div class="tranas-news-feed__content">
-                <header class="tranas-news-feed__item-header">
-                    <h3 class="tranas-news-feed__title">
-                        <a href="<?php the_permalink(); ?>">
-                            <?php the_title(); ?>
-                        </a>
-                    </h3>
-
-                    <?php if ( $show_date || $show_category ) : ?>
-                        <div class="tranas-news-feed__meta">
-                            <?php if ( $show_date ) : ?>
-                                <time class="tranas-news-feed__date" datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>">
-                                    <?php echo esc_html( get_the_date( $date_format ) ); ?>
-                                </time>
-                            <?php endif; ?>
-
-                            <?php if ( $show_category && ! empty( $categories ) && ! is_wp_error( $categories ) ) : ?>
-                                <div class="tranas-news-feed__categories">
-                                    <?php foreach ( $categories as $category ) : ?>
-                                        <span class="tranas-news-feed__category">
-                                            <?php echo esc_html( $category->name ); ?>
-                                        </span>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
-                </header>
-
-                <?php if ( $show_excerpt ) : ?>
-                    <div class="tranas-news-feed__excerpt">
-                        <?php
-                        $excerpt_length = absint( $atts['excerpt_length'] );
-                        echo wp_trim_words( get_the_excerpt(), $excerpt_length, '&hellip;' );
-                        ?>
-                    </div>
+        <a href="<?php the_permalink(); ?>" class="post-item link">
+            <article>
+                <?php if ( $show_thumbnail ) : ?>
+                    <figure>
+                        <?php if ( has_post_thumbnail() ) : ?>
+                            <?php the_post_thumbnail( 'medium', array( 'alt' => get_the_title() ) ); ?>
+                        <?php else : ?>
+                            <img decoding="async" src="<?php echo esc_url( $fallback_image ); ?>" alt="<?php echo esc_attr( get_the_title() ); ?>">
+                        <?php endif; ?>
+                    </figure>
                 <?php endif; ?>
 
-                <footer class="tranas-news-feed__item-footer">
-                    <a href="<?php the_permalink(); ?>" class="tranas-news-feed__read-more">
-                        <?php esc_html_e( 'Läs mer', 'tranas-intranet' ); ?>
-                        <span class="screen-reader-text">
-                            <?php
-                            /* translators: %s: inläggets titel */
-                            printf( esc_html__( 'om %s', 'tranas-intranet' ), get_the_title() );
-                            ?>
-                        </span>
-                    </a>
-                </footer>
-            </div>
-        </article>
+                <div class="post-content">
+                    <?php if ( $show_date ) : ?>
+                        <div class="post-meta">
+                            <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>">
+                                <?php echo esc_html( get_the_date( $date_format ) ); ?>
+                            </time>
+                        </div>
+                    <?php endif; ?>
+
+                    <h3 class="post-title"><?php the_title(); ?></h3>
+
+                    <?php if ( $show_excerpt ) : ?>
+                        <div class="post-excerpt">
+                            <p><?php
+                                $excerpt_length = absint( $atts['excerpt_length'] );
+                                echo wp_trim_words( get_the_excerpt(), $excerpt_length, '…' );
+                            ?></p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </article>
+        </a>
         <?php
     }
 

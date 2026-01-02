@@ -3,7 +3,7 @@
  * Plugin Name: Tranås Intranät
  * Plugin URI: https://tranas.se
  * Description: Intranätsanpassningar för Tranås kommun. Lägger till shortcodes och funktionalitet för användarhantering.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Tranås kommun
  * Author URI: https://tranas.se
  * Text Domain: tranas-intranet
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin-konstanter
-define( 'TRANAS_INTRANET_VERSION', '1.1.0' );
+define( 'TRANAS_INTRANET_VERSION', '1.2.0' );
 define( 'TRANAS_INTRANET_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TRANAS_INTRANET_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -65,6 +65,13 @@ class Tranas_Intranet {
     public $news_feed_preferences = null;
 
     /**
+     * Instans av System Post Type
+     *
+     * @var Tranas_System_Post_Type
+     */
+    public $system_post_type = null;
+
+    /**
      * Ladda in beroenden
      */
     private function load_dependencies() {
@@ -73,6 +80,8 @@ class Tranas_Intranet {
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-login-required.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-news-feed-preferences.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-news-feed-shortcode.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-post-type.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-shortcode.php';
     }
 
     /**
@@ -81,6 +90,10 @@ class Tranas_Intranet {
     private function init_hooks() {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
         add_action( 'init', array( $this, 'load_textdomain' ) );
+
+        // Registrera ACF JSON-sökvägar
+        add_filter( 'acf/settings/load_json', array( $this, 'add_acf_json_load_point' ) );
+        add_filter( 'acf/settings/save_json', array( $this, 'set_acf_json_save_point' ) );
         
         // Initiera inloggningskrav (kräver inloggning för hela sidan)
         new Tranas_Login_Required();
@@ -94,6 +107,12 @@ class Tranas_Intranet {
         // Initiera nyhetsflödes-funktionalitet
         $this->news_feed_preferences = new Tranas_News_Feed_Preferences();
         new Tranas_News_Feed_Shortcode( $this->news_feed_preferences );
+
+        // Initiera System-posttypen
+        $this->system_post_type = new Tranas_System_Post_Type();
+
+        // Initiera System-shortcode
+        new Tranas_System_Shortcode();
     }
 
     /**
@@ -141,6 +160,27 @@ class Tranas_Intranet {
             dirname( plugin_basename( __FILE__ ) ) . '/languages'
         );
     }
+
+    /**
+     * Lägg till ACF JSON-laddningspunkt
+     *
+     * @param array $paths Befintliga sökvägar.
+     * @return array Uppdaterade sökvägar.
+     */
+    public function add_acf_json_load_point( $paths ) {
+        $paths[] = TRANAS_INTRANET_PLUGIN_DIR . 'acf-json';
+        return $paths;
+    }
+
+    /**
+     * Sätt ACF JSON-sparningspunkt
+     *
+     * @param string $path Befintlig sökväg.
+     * @return string Uppdaterad sökväg.
+     */
+    public function set_acf_json_save_point( $path ) {
+        return TRANAS_INTRANET_PLUGIN_DIR . 'acf-json';
+    }
 }
 
 // Starta pluginet
@@ -182,6 +222,21 @@ function tranas_intranet_activate() {
             delete_user_meta( $row->user_id, $old_key );
         }
     }
+
+    // Registrera posttypen och flusha permalänkar
+    require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-post-type.php';
+    $system_post_type = new Tranas_System_Post_Type();
+    $system_post_type->register_post_type();
+    flush_rewrite_rules();
 }
 register_activation_hook( __FILE__, 'tranas_intranet_activate' );
+
+/**
+ * Städa upp vid avaktivering
+ */
+function tranas_intranet_deactivate() {
+    // Flusha permalänkar för att ta bort custom post type regler
+    flush_rewrite_rules();
+}
+register_deactivation_hook( __FILE__, 'tranas_intranet_deactivate' );
 

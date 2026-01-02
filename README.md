@@ -127,6 +127,60 @@ Visar det personaliserade nyhetsflödet baserat på användarens val:
 - `none` - Visar ett meddelande om att välja kategorier
 - `latest` - Visar senaste inläggen oavsett kategori
 
+### 5. System (externa länkar)
+
+Pluginet skapar en custom post type för "System" – länkar till externa system som används i organisationen.
+
+#### Post-typ
+
+System-posttypen (`tranas_system`) har:
+- **Titel** – Systemets namn
+- **Utvald bild** – Ikon/logotyp för systemet
+- **Extern länk** (ACF-fält) – URL till det externa systemet
+
+Posttypen använder klassisk editor (inte Gutenberg) för enkel hantering.
+
+#### System-shortcode
+
+Visar en lista med alla system som klickbara kort:
+
+```
+[tranas_system]
+```
+
+**Attribut:**
+
+| Attribut | Beskrivning | Standard |
+|----------|-------------|----------|
+| `posts_per_page` | Antal system att visa (-1 = alla) | `-1` |
+| `orderby` | Sorteringsfält: `title`, `date`, `menu_order` | `title` |
+| `order` | Sorteringsriktning: `ASC`, `DESC` | `ASC` |
+| `layout` | Layout: `grid`, `list` | `grid` |
+| `columns` | Antal kolumner i grid-layout (1-6) | `3` |
+| `show_thumbnail` | Visa miniatyrbild/ikon | `true` |
+| `link_target` | Hur länken öppnas: `_blank`, `_self` | `_blank` |
+| `title` | Rubrik ovanför systemlistan | `Mina system` |
+| `show_title` | Visa rubriken | `true` |
+| `edit_url` | URL till sida för att redigera system | tom |
+| `edit_text` | Text på redigera-knappen | `Redigera mina system` |
+
+**Exempel:**
+```
+[tranas_system columns="4" orderby="title" order="ASC"]
+```
+
+```
+[tranas_system layout="list" show_thumbnail="false"]
+```
+
+```
+[tranas_system edit_url="/mina-installningar" edit_text="Hantera system"]
+```
+
+```
+[tranas_system show_title="false" posts_per_page="6"]
+```
+
 ## Installation
 
 1. Ladda upp plugin-mappen till `/wp-content/plugins/`
@@ -136,6 +190,7 @@ Visar det personaliserade nyhetsflödet baserat på användarens val:
 
 - WordPress 6.0 eller senare
 - PHP 8.0 eller senare
+- Advanced Custom Fields (ACF) – för System-posttypens fält
 
 ## Filter och hooks
 
@@ -236,6 +291,26 @@ Formulären använder följande CSS-klasser (kompatibla med Tranås Forms-temat)
 | `.tranas-news-feed__thumbnail` | Miniatyrbild-container |
 | `.tranas-news-feed__personalized-badge` | "Personligt flöde"-märke |
 
+### Systemlista
+
+| Klass | Beskrivning |
+|-------|-------------|
+| `.tranas-system` | Wrapper för systemlistan |
+| `.tranas-system--grid` | Grid-layout |
+| `.tranas-system--list` | List-layout |
+| `.tranas-system--columns-X` | Antal kolumner (1-6) |
+| `.tranas-system__header` | Header med rubrik och knapp |
+| `.tranas-system__heading` | Rubrik (h2) |
+| `.tranas-system__edit-link` | Redigera-knappen |
+| `.tranas-system__list` | Container för systemkorten |
+| `.tranas-system__item` | Enskilt systemkort (länk) |
+| `.tranas-system__card` | Kortets innehåll |
+| `.tranas-system__thumbnail` | Miniatyrbild-container |
+| `.tranas-system__placeholder-icon` | Placeholder om ingen bild finns |
+| `.tranas-system__content` | Textinnehåll |
+| `.tranas-system__title` | Systemets titel |
+| `.tranas-system__external-indicator` | Ikon för extern länk |
+
 ## JavaScript
 
 Pluginet laddar följande JavaScript-filer:
@@ -268,6 +343,12 @@ Vid aktivering migreras automatiskt gammal data:
 - `tranas_card_number` → `tranas_quick_number`
 
 ## Changelog
+
+### 1.2.0
+- Nytt: Custom post type "System" för externa systemlänkar
+- Ny shortcode: `[tranas_system]` för att visa systemlista
+- ACF-fältgrupp för extern URL på System-posttypen
+- Klassisk editor för System (ingen Gutenberg)
 
 ### 1.1.0
 - Nytt: Personligt nyhetsflöde
