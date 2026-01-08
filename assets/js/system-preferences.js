@@ -31,8 +31,8 @@
         form.addEventListener('submit', handleSubmit);
 
         // Markera/avmarkera alla-knappar
-        const selectAllBtn = form.querySelector('.tranas-news-preferences__select-all');
-        const deselectAllBtn = form.querySelector('.tranas-news-preferences__deselect-all');
+        const selectAllBtn = form.querySelector('.tranas-preferences__select-all');
+        const deselectAllBtn = form.querySelector('.tranas-preferences__deselect-all');
 
         if (selectAllBtn) {
             selectAllBtn.addEventListener('click', function() {
@@ -54,7 +54,7 @@
      * @param {boolean}         checked Om checkboxarna ska markeras eller inte
      */
     function toggleAllCheckboxes(form, checked) {
-        const checkboxes = form.querySelectorAll('.tranas-news-preferences__checkbox');
+        const checkboxes = form.querySelectorAll('.tranas-preferences__checkbox');
         checkboxes.forEach(function(checkbox) {
             checkbox.checked = checked;
         });

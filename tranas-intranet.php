@@ -3,7 +3,7 @@
  * Plugin Name: Tranås Intranät
  * Plugin URI: https://tranas.se
  * Description: Intranätsanpassningar för Tranås kommun. Lägger till shortcodes och funktionalitet för användarhantering.
- * Version: 1.2.0
+ * Version: 1.5.0
  * Author: Tranås kommun
  * Author URI: https://tranas.se
  * Text Domain: tranas-intranet
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin-konstanter
-define( 'TRANAS_INTRANET_VERSION', '1.2.0' );
+define( 'TRANAS_INTRANET_VERSION', '1.5.0' );
 define( 'TRANAS_INTRANET_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TRANAS_INTRANET_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -79,6 +79,13 @@ class Tranas_Intranet {
     public $system_preferences = null;
 
     /**
+     * Instans av Favorites
+     *
+     * @var Tranas_Favorites
+     */
+    public $favorites = null;
+
+    /**
      * Ladda in beroenden
      */
     private function load_dependencies() {
@@ -90,6 +97,9 @@ class Tranas_Intranet {
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-post-type.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-preferences.php';
         require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-system-shortcode.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-cover-image-shortcode.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-favorites.php';
+        require_once TRANAS_INTRANET_PLUGIN_DIR . 'includes/class-profile-image-shortcode.php';
     }
 
     /**
@@ -124,12 +134,37 @@ class Tranas_Intranet {
 
         // Initiera System-shortcode
         new Tranas_System_Shortcode( $this->system_preferences );
+
+        // Initiera Cover Image-shortcode
+        new Tranas_Cover_Image_Shortcode();
+
+        // Initiera Favoriter
+        $this->favorites = new Tranas_Favorites();
+
+        // Initiera Profilbild-shortcode
+        new Tranas_Profile_Image_Shortcode();
     }
 
     /**
      * Ladda in assets
      */
     public function enqueue_scripts() {
+        // Favoriter CSS
+        wp_enqueue_style(
+            'tranas-intranet-favorites',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/css/favorites.css',
+            array(),
+            TRANAS_INTRANET_VERSION
+        );
+
+        // Bilduppladdning CSS (gemensam för profilbild och omslagsbild)
+        wp_enqueue_style(
+            'tranas-intranet-image-upload',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/css/image-upload.css',
+            array(),
+            TRANAS_INTRANET_VERSION
+        );
+
         wp_enqueue_script(
             'tranas-intranet-user-profile',
             TRANAS_INTRANET_PLUGIN_URL . 'assets/js/user-profile.js',
@@ -154,20 +189,63 @@ class Tranas_Intranet {
             true
         );
 
+        wp_enqueue_script(
+            'tranas-intranet-cover-image',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/js/cover-image.js',
+            array(),
+            TRANAS_INTRANET_VERSION,
+            true
+        );
+
+        wp_enqueue_script(
+            'tranas-intranet-favorites',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/js/favorites.js',
+            array(),
+            TRANAS_INTRANET_VERSION,
+            true
+        );
+
+        wp_enqueue_script(
+            'tranas-intranet-profile-image',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/js/profile-image.js',
+            array(),
+            TRANAS_INTRANET_VERSION,
+            true
+        );
+
         // Lokalisera scripten med gemensam data
         $localize_data = array(
-            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-            'nonce'   => wp_create_nonce( 'tranas_user_profile_nonce' ),
-            'strings' => array(
-                'saving'  => __( 'Sparar...', 'tranas-intranet' ),
-                'saved'   => __( 'Uppgifterna har sparats!', 'tranas-intranet' ),
-                'error'   => __( 'Ett fel uppstod. Försök igen.', 'tranas-intranet' ),
+            'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
+            'nonce'             => wp_create_nonce( 'tranas_user_profile_nonce' ),
+            'coverNonce'        => wp_create_nonce( 'tranas_cover_image_nonce' ),
+            'profileImageNonce' => wp_create_nonce( 'tranas_profile_image_nonce' ),
+            'coverFallbackUrl'  => Tranas_Cover_Image_Shortcode::get_fallback_image_url(),
+            'strings'           => array(
+                'saving'               => __( 'Sparar...', 'tranas-intranet' ),
+                'saved'                => __( 'Uppgifterna har sparats!', 'tranas-intranet' ),
+                'error'                => __( 'Ett fel uppstod. Försök igen.', 'tranas-intranet' ),
+                'coverInvalidType'     => __( 'Ogiltig filtyp. Endast JPG, PNG, GIF och WebP är tillåtna.', 'tranas-intranet' ),
+                'coverTooLarge'        => __( 'Filen är för stor. Max storlek är 5 MB.', 'tranas-intranet' ),
+                'coverConfirmRemove'   => __( 'Är du säker på att du vill ta bort bakgrundsbilden?', 'tranas-intranet' ),
+                'coverRemove'          => __( 'Ta bort bild', 'tranas-intranet' ),
+                'profileInvalidType'   => __( 'Ogiltig filtyp. Endast JPG, PNG, GIF och WebP är tillåtna.', 'tranas-intranet' ),
+                'profileTooLarge'      => __( 'Filen är för stor. Max storlek är 2 MB.', 'tranas-intranet' ),
+                'profileConfirmRemove' => __( 'Är du säker på att du vill ta bort din profilbild?', 'tranas-intranet' ),
+                'profileRemove'        => __( 'Ta bort', 'tranas-intranet' ),
+                'favoriteAdd'          => __( 'Lägg till i favoriter', 'tranas-intranet' ),
+                'favoriteRemove'       => __( 'Ta bort från favoriter', 'tranas-intranet' ),
+                'favoriteAdded'        => __( 'Tillagd i favoriter!', 'tranas-intranet' ),
+                'favoriteRemoved'      => __( 'Borttagen från favoriter', 'tranas-intranet' ),
+                'favoritesEmpty'       => __( 'Du har inga sparade favoriter ännu.', 'tranas-intranet' ),
             ),
         );
 
         wp_localize_script( 'tranas-intranet-user-profile', 'tranasIntranet', $localize_data );
         wp_localize_script( 'tranas-intranet-news-feed', 'tranasIntranet', $localize_data );
         wp_localize_script( 'tranas-intranet-system-preferences', 'tranasIntranet', $localize_data );
+        wp_localize_script( 'tranas-intranet-cover-image', 'tranasIntranet', $localize_data );
+        wp_localize_script( 'tranas-intranet-favorites', 'tranasIntranet', $localize_data );
+        wp_localize_script( 'tranas-intranet-profile-image', 'tranasIntranet', $localize_data );
     }
 
     /**

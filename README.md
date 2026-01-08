@@ -78,12 +78,10 @@ Visar ett formulär där användaren kan välja vilka kategorier som ska visas i
 | Attribut | Beskrivning | Standard |
 |----------|-------------|----------|
 | `taxonomy` | Taxonomi att visa kategorier från | `category` |
-| `title` | Rubrik ovanför formuläret | `Anpassa ditt nyhetsflöde` |
-| `description` | Beskrivning under rubriken | `Välj vilka kategorier du vill se...` |
 
 **Exempel:**
 ```
-[tranas_news_preferences title="Välj dina intressen" description="Markera de områden du vill följa"]
+[tranas_news_preferences taxonomy="category"]
 ```
 
 #### Nyhetsflödes-shortcode
@@ -146,18 +144,6 @@ Visar ett formulär där användaren kan välja vilka system som ska visas på s
 
 ```
 [tranas_system_preferences]
-```
-
-**Attribut:**
-
-| Attribut | Beskrivning | Standard |
-|----------|-------------|----------|
-| `title` | Rubrik ovanför formuläret | `Välj dina system` |
-| `description` | Beskrivning under rubriken | `Markera de system du använder...` |
-
-**Exempel:**
-```
-[tranas_system_preferences title="Mina systemgenvägar" description="Välj vilka system du vill ha på din startsida"]
 ```
 
 #### System-shortcode
@@ -290,12 +276,12 @@ Formulären använder följande CSS-klasser (kompatibla med Tranås Forms-temat)
 
 | Klass | Beskrivning |
 |-------|-------------|
-| `.tranas-news-preferences-wrapper` | Wrapper för formuläret |
-| `.tranas-news-preferences__categories` | Container för kategori-checkboxar |
-| `.tranas-news-preferences__category` | Enskild kategori |
-| `.tranas-news-preferences__checkbox` | Input-element (stylas som knapp via CSS) |
-| `.tranas-news-preferences__select-all` | Markera alla-knappen |
-| `.tranas-news-preferences__deselect-all` | Avmarkera alla-knappen |
+| `.tranas-preferences-wrapper` | Wrapper för formuläret |
+| `.tranas-preferences__categories` | Container för kategori-checkboxar |
+| `.tranas-preferences__category` | Enskild kategori |
+| `.tranas-preferences__checkbox` | Input-element (stylas som knapp via CSS) |
+| `.tranas-preferences__select-all` | Markera alla-knappen |
+| `.tranas-preferences__deselect-all` | Avmarkera alla-knappen |
 
 ### Nyhetsflöde
 
@@ -334,15 +320,13 @@ Formulären använder följande CSS-klasser (kompatibla med Tranås Forms-temat)
 
 ### Systeminställningar
 
-Systeminställningar använder samma CSS-klasser som nyhetsflödes-inställningarna (`tranas-news-preferences__*`) för konsekvent styling. Se sektionen "Nyhetsflödes-inställningar" ovan för CSS-klasser.
+Systeminställningar använder samma CSS-klasser som nyhetsflödes-inställningarna (`tranas-preferences__*`) för konsekvent styling. Se sektionen "Nyhetsflödes-inställningar" ovan för CSS-klasser.
 
 Wrapper-klassen är dock unik:
 
 | Klass | Beskrivning |
 |-------|-------------|
 | `.tranas-system-preferences-wrapper` | Wrapper för formuläret |
-| `.tranas-system-preferences__title` | Rubrik |
-| `.tranas-system-preferences__description` | Beskrivningstext |
 
 ## JavaScript
 

@@ -169,14 +169,8 @@ class Tranas_System_Preferences {
             );
         }
 
-        $atts = shortcode_atts(
-            array(
-                'title'       => __( 'Välj dina system', 'tranas-intranet' ),
-                'description' => __( 'Markera de system du använder för att visa dem på din startsida.', 'tranas-intranet' ),
-            ),
-            $atts,
-            'tranas_system_preferences'
-        );
+        // Inga attribut för tillfället, men behåll för framtida utökningar
+        $atts = shortcode_atts( array(), $atts, 'tranas_system_preferences' );
 
         $systems      = $this->get_available_systems();
         $user_systems = $this->get_user_systems();
@@ -196,43 +190,35 @@ class Tranas_System_Preferences {
                 <!-- Meddelande-container för AJAX-svar -->
                 <div class="tf-message-container tranas-system-messages" role="alert" aria-live="polite" aria-atomic="true"></div>
 
-                <?php if ( ! empty( $atts['title'] ) ) : ?>
-                    <h2 class="tranas-system-preferences__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-                <?php endif; ?>
-
-                <?php if ( ! empty( $atts['description'] ) ) : ?>
-                    <p class="tranas-system-preferences__description"><?php echo esc_html( $atts['description'] ); ?></p>
-                <?php endif; ?>
-
-                <fieldset class="tf-fieldset tranas-news-preferences__fieldset">
+                <fieldset class="tf-fieldset tranas-preferences__fieldset">
                     <legend class="screen-reader-text"><?php esc_html_e( 'Välj system', 'tranas-intranet' ); ?></legend>
 
-                    <div class="tranas-news-preferences__actions-top">
-                        <button type="button" class="tranas-news-preferences__select-all tf-button tf-button--secondary">
+                    <div class="tranas-preferences__actions-top">
+                        <button type="button" class="tranas-preferences__select-all tf-button tf-button--secondary">
                             <?php esc_html_e( 'Markera alla', 'tranas-intranet' ); ?>
                         </button>
-                        <button type="button" class="tranas-news-preferences__deselect-all tf-button tf-button--secondary">
+                        <button type="button" class="tranas-preferences__deselect-all tf-button tf-button--secondary">
                             <?php esc_html_e( 'Avmarkera alla', 'tranas-intranet' ); ?>
                         </button>
                     </div>
 
-                    <div class="tranas-news-preferences__categories">
+                    <div class="tranas-preferences__categories">
                         <?php foreach ( $systems as $system ) : ?>
                             <?php
                             $is_checked = in_array( $system->ID, $user_systems, true );
                             $field_id   = 'tranas-system-' . $system->ID;
                             ?>
-                            <div class="tranas-news-preferences__category">
-                                <label for="<?php echo esc_attr( $field_id ); ?>" class="tranas-news-preferences__label">
+                            <div class="tranas-preferences__category">
+                                <label for="<?php echo esc_attr( $field_id ); ?>" class="tranas-preferences__label">
                                     <input
                                         type="checkbox"
                                         id="<?php echo esc_attr( $field_id ); ?>"
                                         name="systems[]"
                                         value="<?php echo esc_attr( $system->ID ); ?>"
-                                        class="tranas-news-preferences__checkbox"
+                                        class="tranas-preferences__checkbox"
                                         <?php checked( $is_checked ); ?>
                                     />
-                                    <span class="tranas-news-preferences__category-name">
+                                    <span class="tranas-preferences__category-name">
                                         <?php echo esc_html( $system->post_title ); ?>
                                     </span>
                                 </label>

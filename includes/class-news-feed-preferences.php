@@ -150,7 +150,7 @@ class Tranas_News_Feed_Preferences {
     public function render_preferences_shortcode( $atts ) {
         // Hoppa över rendering i admin/REST-kontext
         if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
-            return '<div class="tranas-news-preferences-wrapper"><p>' . 
+            return '<div class="tranas-preferences-wrapper"><p>' . 
                 esc_html__( '[Nyhetsflödes-inställningar visas här på frontend]', 'tranas-intranet' ) . 
                 '</p></div>';
         }
@@ -172,9 +172,7 @@ class Tranas_News_Feed_Preferences {
 
         $atts = shortcode_atts(
             array(
-                'taxonomy'    => 'category',
-                'title'       => __( 'Anpassa ditt nyhetsflöde', 'tranas-intranet' ),
-                'description' => __( 'Välj vilka kategorier du vill se i ditt nyhetsflöde.', 'tranas-intranet' ),
+                'taxonomy' => 'category',
             ),
             $atts,
             'tranas_news_preferences'
@@ -191,61 +189,53 @@ class Tranas_News_Feed_Preferences {
 
         ob_start();
         ?>
-        <div class="tranas-news-preferences-wrapper">
-            <form id="tranas-news-preferences-form" class="tranas-news-preferences-form" method="post">
+        <div class="tranas-preferences-wrapper">
+            <form id="tranas-news-preferences-form" class="tranas-preferences-form" method="post">
                 <?php wp_nonce_field( 'tranas_news_preferences_nonce', 'tranas_news_nonce' ); ?>
                 <input type="hidden" name="taxonomy" value="<?php echo esc_attr( $atts['taxonomy'] ); ?>" />
                 
                 <!-- Meddelande-container för AJAX-svar -->
                 <div class="tf-message-container tranas-news-messages" role="alert" aria-live="polite" aria-atomic="true"></div>
 
-                <?php if ( ! empty( $atts['title'] ) ) : ?>
-                    <h2 class="tranas-news-preferences__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-                <?php endif; ?>
-
-                <?php if ( ! empty( $atts['description'] ) ) : ?>
-                    <p class="tranas-news-preferences__description"><?php echo esc_html( $atts['description'] ); ?></p>
-                <?php endif; ?>
-
-                <fieldset class="tf-fieldset tranas-news-preferences__fieldset">
+                <fieldset class="tf-fieldset tranas-preferences__fieldset">
                     <legend class="screen-reader-text"><?php esc_html_e( 'Välj kategorier', 'tranas-intranet' ); ?></legend>
                     
-                    <div class="tranas-news-preferences__actions-top">
-                        <button type="button" class="tranas-news-preferences__select-all tf-button tf-button--secondary">
+                    <div class="tranas-preferences__actions-top">
+                        <button type="button" class="tranas-preferences__select-all tf-button tf-button--secondary">
                             <?php esc_html_e( 'Markera alla', 'tranas-intranet' ); ?>
                         </button>
-                        <button type="button" class="tranas-news-preferences__deselect-all tf-button tf-button--secondary">
+                        <button type="button" class="tranas-preferences__deselect-all tf-button tf-button--secondary">
                             <?php esc_html_e( 'Avmarkera alla', 'tranas-intranet' ); ?>
                         </button>
                     </div>
 
-                    <div class="tranas-news-preferences__categories">
+                    <div class="tranas-preferences__categories">
                         <?php foreach ( $categories as $category ) : ?>
                             <?php
                             $is_checked = in_array( $category->term_id, $user_categories, true );
                             $field_id   = 'tranas-cat-' . $category->term_id;
                             ?>
-                            <div class="tranas-news-preferences__category">
-                                <label for="<?php echo esc_attr( $field_id ); ?>" class="tranas-news-preferences__label">
+                            <div class="tranas-preferences__category">
+                                <label for="<?php echo esc_attr( $field_id ); ?>" class="tranas-preferences__label">
                                     <input
                                         type="checkbox"
                                         id="<?php echo esc_attr( $field_id ); ?>"
                                         name="categories[]"
                                         value="<?php echo esc_attr( $category->term_id ); ?>"
-                                        class="tranas-news-preferences__checkbox"
+                                        class="tranas-preferences__checkbox"
                                         <?php checked( $is_checked ); ?>
                                     />
-                                    <span class="tranas-news-preferences__category-name">
+                                    <span class="tranas-preferences__category-name">
                                         <?php echo esc_html( $category->name ); ?>
                                     </span>
                                     <?php if ( $category->count > 0 ) : ?>
-                                        <span class="tranas-news-preferences__category-count">
+                                        <span class="tranas-preferences__category-count">
                                             <?php echo esc_html( $category->count ); ?>
                                         </span>
                                     <?php endif; ?>
                                 </label>
                                 <?php if ( ! empty( $category->description ) ) : ?>
-                                    <p class="tranas-news-preferences__category-description">
+                                    <p class="tranas-preferences__category-description">
                                         <?php echo esc_html( $category->description ); ?>
                                     </p>
                                 <?php endif; ?>
@@ -254,8 +244,8 @@ class Tranas_News_Feed_Preferences {
                     </div>
                 </fieldset>
 
-                <div class="tranas-news-preferences__actions">
-                    <button type="submit" class="tf-submit tranas-news-preferences__submit">
+                <div class="tranas-preferences__actions">
+                    <button type="submit" class="tf-submit tranas-preferences__submit">
                         <span class="tf-submit-text"><?php esc_html_e( 'Spara inställningar', 'tranas-intranet' ); ?></span>
                         <span class="tf-submit-loading" aria-hidden="true" style="display:none;"><?php esc_html_e( 'Sparar...', 'tranas-intranet' ); ?></span>
                     </button>
