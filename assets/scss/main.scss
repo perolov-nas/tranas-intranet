@@ -1,0 +1,12 @@
+// ==========================================================================
+// Tranås Intranet Plugin - Main SCSS
+// ==========================================================================
+// Varje partial-fil importerar själv variables/mixins från style-core
+// via --load-path i watch.sh
+
+// Plugin-specifika stilar
+@use 'custom-feed';
+@use 'systems';
+@use 'image-upload';
+@use 'favorites';
+@use 'user-hero';

@@ -1,0 +1,118 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.tranas-system {
+    width: 100%;
+    max-width: 100%;
+
+    .tranas-system__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: calc($gap / 1);
+        margin-bottom: calc($unit * 2);
+
+        .tranas-system__heading {
+            font-size: var(--h2-size);
+            color: var(--color-text);
+        }
+
+        .tranas-system__description {
+            font-size: var(--body-size);
+        }
+
+        .tranas-system__button {
+            @include button;
+        }
+
+        .tranas-system__edit-link {
+            @include button;
+        }
+    }
+
+    .tranas-system__list {
+        width: 100%;
+        max-width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: calc($gap / 2);
+
+        .tranas-system__item {
+            min-width: auto;
+            display: flex;
+            gap: calc($gap / 1);
+            border: 1px solid var(--box-border);
+            border-radius: $border-radius-default;
+            padding: calc($unit / 1);
+            background: var(--box-background);
+            transition: all 0.2s ease;
+
+            
+            .tranas-system__card {
+                display: flex;
+                gap: calc($gap / 2);
+                align-items: center;
+                transition: all 0.2s ease;
+                position: relative;
+
+                &:after {
+                    content: '';
+                    position: relative;
+                    top: 0;
+                    left: 0;
+                    width: $unit;
+                    height: $unit;
+                    background: var(--box-background);
+                    width: $unit;
+                    height: $unit;
+                    background: none;
+                    pointer-events: none;
+                }
+                
+                .tranas-system__thumbnail {
+                    display: flex;
+                    align-items: center;
+
+                    svg {
+                        width: calc($unit * 2.5);
+                        height: auto;
+                        aspect-ratio: 4/4;
+                        object-fit: contain;
+                        object-position: center;
+                        fill: var(--color-text);
+    
+                        // [data-theme='dark'] & {
+                        //     filter: invert(1);
+                        // }
+                        // [data-theme='light'] & {
+                        //     filter: none;
+                        // }
+                    }
+                }
+    
+                .tranas-system__title {
+                    text-align: center;
+                    font-size: var(--body-size);
+                    font-weight: 600;
+                    margin: 0;
+                    padding: 0;
+                }
+            }
+
+            &:hover {
+                background: var(--background-overlay);
+                border-color: var(--box-border-hover);
+
+                .tranas-system__card {
+                    .tranas-system__thumbnail {
+                        svg {
+                            fill: var(--link-hover-color);
+                            stroke: var(--link-hover-color);
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+}

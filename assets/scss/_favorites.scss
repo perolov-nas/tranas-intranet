@@ -1,0 +1,25 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.favorites {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap;
+    padding: $padding;
+
+    &__item {
+        border-radius: $border-radius-default;
+        background: var(--box-background);
+        border: 1px solid var(--box-border);
+        padding: $unit;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: var(--box-border-hover);
+        }
+    }
+
+    &__button {
+        @include button;
+    }
+}

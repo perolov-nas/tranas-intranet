@@ -149,18 +149,10 @@ class Tranas_Intranet {
      * Ladda in assets
      */
     public function enqueue_scripts() {
-        // Favoriter CSS
+        // Plugin CSS (kompilerad från SCSS med delade variabler från style-core)
         wp_enqueue_style(
-            'tranas-intranet-favorites',
-            TRANAS_INTRANET_PLUGIN_URL . 'assets/css/favorites.css',
-            array(),
-            TRANAS_INTRANET_VERSION
-        );
-
-        // Bilduppladdning CSS (gemensam för profilbild och omslagsbild)
-        wp_enqueue_style(
-            'tranas-intranet-image-upload',
-            TRANAS_INTRANET_PLUGIN_URL . 'assets/css/image-upload.css',
+            'tranas-intranet-styles',
+            TRANAS_INTRANET_PLUGIN_URL . 'assets/css/main.css',
             array(),
             TRANAS_INTRANET_VERSION
         );

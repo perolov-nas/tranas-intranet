@@ -1,0 +1,12 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.wp-block-cover.user-hero {
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+}
